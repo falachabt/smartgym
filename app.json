@@ -22,7 +22,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.ezardive.smartgym"
     },
     "web": {
       "bundler": "metro",
@@ -34,6 +35,19 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6999ef0d-dc24-4192-9040-09ec7499b8c4"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6999ef0d-dc24-4192-9040-09ec7499b8c4"
+      }
+    },
+    "owner": "falacha"
   }
 }
