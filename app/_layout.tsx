@@ -42,8 +42,8 @@ export default function RootLayout() {
 
   // Check for updates on mount
   useEffect(() => {
-    // Skip updates check on web platform
-    if (Platform.OS === 'web') {
+    // Skip updates check on web platform or in Expo Go
+    if (Platform.OS === 'web' || __DEV__) {
       return;
     }
 
