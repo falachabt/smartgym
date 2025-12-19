@@ -1,4 +1,5 @@
 import { BorderRadius, Colors, Spacing, Typography } from '@/constants/Styles';
+import { useExercices } from '@/hooks/useExercices';
 import { useMachine } from '@/hooks/useMachine';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -105,10 +106,11 @@ export default function MachineDetailsScreen() {
   const machineId = (params.qr_code as string) || 'leg-press';
   const machine = MACHINES_DATA[machineId] || MACHINES_DATA['leg-press'];
 
-
-  const { machine : online, loading, error } = useMachine(machineId)
+  const { machine: online, loading, error } = useMachine(machineId);
+  const { exercices, loading: exercicesLoading, error: exercicesError } = useExercices(online?.machine_id ?? null);
 
   console.log('Fetched machine data:', online);
+  console.log('Fetched exercices:', exercices);
   
   const [selectedTab, setSelectedTab] = useState(machine.tabs[0]);
   const [selectedLevel, setSelectedLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
@@ -162,10 +164,8 @@ export default function MachineDetailsScreen() {
 
         {/* Video Thumbnail */}
         <View style={styles.videoSection}>
-          <Image source={{ uri: machine.videoThumbnail }} style={styles.videoThumbnail} />
-          <View style={styles.playButton}>
-            <Text style={styles.playButtonText}>▶</Text>
-          </View>
+          <Image source={{ uri: exercices?.[0]?.video_url || exercices?.[0]?.image_produit_url || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800" }} style={styles.videoThumbnail} />
+          
         </View>
 
         {/* Collapsible Sections */}
