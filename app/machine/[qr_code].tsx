@@ -134,12 +134,12 @@ export default function MachineDetailsScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{machine.name}</Text>
+        <Text style={styles.headerTitle}>{online?.nom_machine}</Text>
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Main Image */}
-        <Image source={{ uri: machine.image }} style={styles.mainImage} />
+        <Image source={{ uri: online. }} style={styles.mainImage} />
 
         {/* Machine Name */}
         <View style={styles.titleSection}>
