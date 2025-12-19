@@ -21,11 +21,18 @@ export function useMachine(qrCode: string | null) {
       setLoading(true);
       setError(null);
 
+      if(!qrCode) {
+        setLoading(false);
+        return;
+      }
+
       const { data, error: fetchError } = await supabase
         .from("machines")
         .select("*")
         .eq("qr_code_id", qrCode)
         .single();
+
+        
 
       if (fetchError) {
         setError(fetchError.message);

@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 
 export default function TabOneScreen() {
   // Déclaration des états pour les données et le chargement
-  const { machines, loading, error, refetch } = useMachines();
+  const { machines, loading, error } = useMachines();
   const router = useRouter();
 
   return (
