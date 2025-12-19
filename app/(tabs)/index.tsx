@@ -29,6 +29,7 @@ export default function TabOneScreen() {
                 setMachines(data);
             }
             
+            
             setLoading(false);
         }
 
