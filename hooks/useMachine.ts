@@ -2,8 +2,10 @@ import { Tables } from "@/types/supabase";
 import { supabase } from "@/utils/supabase";
 import { useEffect, useState } from "react";
 
-// Type Machine depuis Supabase
-type Machine = Tables<"machines">;
+// Type Machine depuis Supabase avec exercices
+type Machine = Tables<"machines"> & {
+  exercices?: Tables<"exercices">[];
+};
 
 // Hook pour récupérer une machine spécifique par son QR code
 export function useMachine(qrCode: string | null) {
@@ -12,26 +14,27 @@ export function useMachine(qrCode: string | null) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-   
     async function fetchMachine() {
       setLoading(true);
       setError(null);
 
-      if(!qrCode) {
+      if (!qrCode) {
         setLoading(false);
-        return
+        return;
       }
 
       const { data, error: fetchError } = await supabase
         .from("machines")
-        .select(`
+        .select(
+          `
           *,
           exercices (
             *,
             muscles_cibles (*),
             recommandations_charges (*)
           )
-        `)
+        `
+        )
         .eq("qr_code_id", qrCode)
         .single();
 
@@ -64,7 +67,10 @@ export function useMachines() {
 
       const { data, error: fetchError } = await supabase
         .from("machines")
-        .select("*");
+        .select(`
+          *,
+          exercices (*)
+        `);
 
       if (fetchError) {
         setError(fetchError.message);
