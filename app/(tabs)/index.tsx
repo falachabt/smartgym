@@ -6,6 +6,7 @@ import {
     Spacing,
     Typography,
 } from "@/constants/Styles";
+
 import { useCategories } from "@/hooks/useCategories";
 import { useMachines } from "@/hooks/useMachine";
 import { useRouter } from "expo-router";
