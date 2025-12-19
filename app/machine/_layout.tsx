@@ -4,7 +4,7 @@ export default function MachineLayout() {
   return (
     <Stack>
       <Stack.Screen 
-        name="[id]" 
+        name="[qr_code]" 
         options={{ 
           headerShown: false 
         }} 

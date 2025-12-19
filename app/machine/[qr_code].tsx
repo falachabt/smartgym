@@ -125,7 +125,6 @@ export default function MachineDetailsScreen() {
     }));
   };
 
-  console.log('Machine ID from QR Code:', machineId);
 
   return (
     <View style={styles.container}>
