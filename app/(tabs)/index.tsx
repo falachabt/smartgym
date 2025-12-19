@@ -1,5 +1,11 @@
 import { Text, View } from "@/components/Themed";
-import { BorderRadius, Colors, Shadows, Spacing, Typography } from "@/constants/Styles";
+import {
+    BorderRadius,
+    Colors,
+    Shadows,
+    Spacing,
+    Typography,
+} from "@/constants/Styles";
 import { useCategories } from "@/hooks/useCategories";
 import { useMachines } from "@/hooks/useMachine";
 import { useRouter } from "expo-router";
@@ -13,18 +19,18 @@ import {
     StatusBar,
     StyleSheet,
     TextInput,
-    TouchableOpacity
+    TouchableOpacity,
 } from "react-native";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = (SCREEN_WIDTH - Spacing.md * 3) / 2;
 
 export default function TabOneScreen() {
   const { machines, loading, error } = useMachines();
   const { categories } = useCategories();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   // Filtrage des machines
   const filteredMachines = useMemo(() => {
@@ -38,13 +44,14 @@ export default function TabOneScreen() {
     }
 
     // Filtre par catégorie - on regarde dans les exercices de chaque machine
-    if (selectedCategory !== 'All') {
+    if (selectedCategory !== "All") {
       filtered = filtered.filter((machine) => {
         if (!machine.exercices || machine.exercices.length === 0) return false;
-        
+
         return machine.exercices.some(
           (exercice) =>
-            exercice.categorie_filtre?.toLowerCase() === selectedCategory.toLowerCase()
+            exercice.categorie_filtre?.toLowerCase() ===
+            selectedCategory.toLowerCase()
         );
       });
     }
@@ -54,7 +61,10 @@ export default function TabOneScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary.dark} />
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={Colors.primary.dark}
+      />
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Machine Catalog</Text>
@@ -135,20 +145,17 @@ export default function TabOneScreen() {
                 source={{
                   uri:
                     machine.exercices?.[0]?.image_produit_url ||
-                    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400',
+                    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400",
                 }}
                 style={styles.machineImage}
                 resizeMode="cover"
               />
               <View style={styles.machineInfo}>
                 <Text style={styles.machineName} numberOfLines={2}>
-                  {machine.nom_machine || 'Machine sans nom'}
-                  {
-                    machine.image_url
-                  }
+                  {machine.nom_machine || "Machine sans nom"}
                 </Text>
                 <Text style={styles.machineCategory}>
-                  {machine.exercices?.[0]?.categorie_filtre || 'General'}
+                  {machine.exercices?.[0]?.categorie_filtre || "General"}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -164,7 +171,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary.dark,
   },
   header: {
-    paddingTop: Platform.OS === 'ios' ? 60 : 50,
+    paddingTop: Platform.OS === "ios" ? 60 : 50,
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.lg,
     backgroundColor: Colors.primary.dark,
@@ -201,8 +208,8 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.full,
     marginRight: Spacing.sm,
     minHeight: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   categoryChipActive: {
     backgroundColor: Colors.primary.main,
@@ -222,19 +229,19 @@ const styles = StyleSheet.create({
   machinesGrid: {
     paddingHorizontal: Spacing.md,
     paddingBottom: 100,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: Spacing.md,
   },
   machineCard: {
     width: CARD_WIDTH,
     backgroundColor: Colors.background.card,
     borderRadius: BorderRadius.sm,
-    overflow: 'hidden',
+    overflow: "hidden",
     ...Shadows.md,
   },
   machineImage: {
-    width: '100%',
+    width: "100%",
     height: CARD_WIDTH,
     backgroundColor: Colors.background.input,
   },
@@ -255,8 +262,8 @@ const styles = StyleSheet.create({
   centerContent: {
     flex: 1,
     width: SCREEN_WIDTH - Spacing.lg * 2,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: Spacing.xxl,
   },
   loadingText: {
@@ -267,11 +274,11 @@ const styles = StyleSheet.create({
   errorText: {
     color: Colors.accent.red,
     fontSize: Typography.fontSize.md,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptyText: {
     color: Colors.text.secondary,
     fontSize: Typography.fontSize.md,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
