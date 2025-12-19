@@ -123,6 +123,10 @@ const styles = StyleSheet.create({
   skipButton: {
     position: "absolute",
     top: Platform.OS === "ios" ? 60 : 40,
+    backgroundColor: "white",
+    color: Colors.text.primary,
+    fontWeight: Typography.fontWeight.bold,
+    borderRadius: BorderRadius.md,
     right: Spacing.lg,
     zIndex: 10,
     paddingHorizontal: Spacing.md,
