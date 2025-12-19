@@ -37,7 +37,7 @@
       "typedRoutes": true
     },
     "updates": {
-      "url": "https://u.expo.dev/6999ef0d-dc24-4192-9040-09ec7499b8c4"
+      "url": "https://u.expo.dev/70742f0b-2c54-43da-b66b-e7b6f079b1c1"
     },
     "runtimeVersion": {
       "policy": "appVersion"
@@ -45,9 +45,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "6999ef0d-dc24-4192-9040-09ec7499b8c4"
+        "projectId": "70742f0b-2c54-43da-b66b-e7b6f079b1c1"
       }
     },
-    "owner": "falacha"
+    "owner": "falachabts-organization"
   }
 }
