@@ -1,13 +1,9 @@
+import { Tables } from "@/types/supabase";
 import { supabase } from "@/utils/supabase";
 import { useEffect, useState } from "react";
 
-// Types
-interface Machine {
-  id?: number;
-  qr_code_id: string;
-  nom_machine: string;
-  [key: string]: any;
-}
+// Type Machine depuis Supabase
+type Machine = Tables<"machines">;
 
 // Hook pour récupérer une machine spécifique par son QR code
 export function useMachine(qrCode: string | null) {
@@ -75,5 +71,5 @@ export function useMachines() {
     fetchMachines();
   }, []);
 
-  return { machines, loading, error, refetch: fetchMachines };
+  return { machines, loading, error };
 }

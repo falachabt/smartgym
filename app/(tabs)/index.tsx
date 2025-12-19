@@ -1,39 +1,14 @@
-import { useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 
 import EditScreenInfo from "@/components/EditScreenInfo";
 import { Text, View } from "@/components/Themed";
-import { supabase } from "@/utils/supabase"; // Assurez-vous que le chemin est correct
+import { useMachines } from "@/hooks/useMachine";
 import { useRouter } from "expo-router";
 
 export default function TabOneScreen() {
   // Déclaration des états pour les données et le chargement
-  const [machines, setMachines] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { machines, loading, error, refetch } = useMachines();
   const router = useRouter();
-
-  useEffect(() => {
-    // Fonction asynchrone pour la récupération des données Supabase
-    async function getMachines() {
-      setLoading(true);
-
-      // Appel Supabase pour récupérer uniquement le nom des machines
-      const { data, error } = await supabase.from("machines").select("*");
-
-      if (error) {
-        console.log("Erreur de chargement des machines:", error.message);
-        // Si erreur, on s'assure que la liste est vide mais que le chargement est terminé
-        setMachines([]);
-      } else if (data) {
-        // Mise à jour de l'état avec les données
-        setMachines(data);
-      }
-
-      setLoading(false);
-    }
-
-    getMachines();
-  }, []); // Le tableau vide [] exécute l'effet une seule fois au montage
 
   return (
     <View style={styles.container}>
