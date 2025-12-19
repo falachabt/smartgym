@@ -12,27 +12,28 @@ export function useMachine(qrCode: string | null) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!qrCode) {
-      setLoading(false);
-      return;
-    }
-
+   
     async function fetchMachine() {
       setLoading(true);
       setError(null);
 
       if(!qrCode) {
         setLoading(false);
-        return;
+        return
       }
 
       const { data, error: fetchError } = await supabase
         .from("machines")
-        .select("*")
+        .select(`
+          *,
+          exercices (
+            *,
+            muscles_cibles (*),
+            recommandations_charges (*)
+          )
+        `)
         .eq("qr_code_id", qrCode)
         .single();
-
-        
 
       if (fetchError) {
         setError(fetchError.message);
