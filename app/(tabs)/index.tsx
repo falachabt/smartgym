@@ -143,6 +143,9 @@ export default function TabOneScreen() {
               <View style={styles.machineInfo}>
                 <Text style={styles.machineName} numberOfLines={2}>
                   {machine.nom_machine || 'Machine sans nom'}
+                  {
+                    machine.image_url
+                  }
                 </Text>
                 <Text style={styles.machineCategory}>
                   {machine.exercices?.[0]?.categorie_filtre || 'General'}
@@ -218,7 +221,6 @@ const styles = StyleSheet.create({
   },
   machinesGrid: {
     paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.md,
     paddingBottom: 100,
     flexDirection: 'row',
     flexWrap: 'wrap',
