@@ -139,7 +139,7 @@ export default function MachineDetailsScreen() {
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Main Image */}
-        <Image source={{ uri: online. }} style={styles.mainImage} />
+        <Image source={{ uri: online?.image_url || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800" }} style={styles.mainImage} />
 
         {/* Machine Name */}
         <View style={styles.titleSection}>
