@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   categoryChip: {
     backgroundColor: Colors.background.input,
     paddingHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.full,
+    borderRadius: BorderRadius.md,
     marginRight: Spacing.sm,
     minHeight: 40,
     justifyContent: "center",
