@@ -1,4 +1,5 @@
 import { BorderRadius, Colors, Spacing, Typography } from '@/constants/Styles';
+import { useMachine } from '@/hooks/useMachine';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -101,8 +102,13 @@ const MACHINES_DATA: Record<string, any> = {
 
 export default function MachineDetailsScreen() {
   const params = useLocalSearchParams();
-  const machineId = (params.id as string) || 'leg-press';
+  const machineId = (params.qr_code as string) || 'leg-press';
   const machine = MACHINES_DATA[machineId] || MACHINES_DATA['leg-press'];
+
+
+  const { machine : online, loading, error } = useMachine(machineId)
+
+  console.log('Fetched machine data:', online);
   
   const [selectedTab, setSelectedTab] = useState(machine.tabs[0]);
   const [selectedLevel, setSelectedLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
@@ -118,6 +124,8 @@ export default function MachineDetailsScreen() {
       [section]: !prev[section]
     }));
   };
+
+  console.log('Machine ID from QR Code:', machineId);
 
   return (
     <View style={styles.container}>
