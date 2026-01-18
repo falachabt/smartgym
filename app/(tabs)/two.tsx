@@ -1,5 +1,8 @@
 import { Text, View } from "@/components/Themed";
 import { BorderRadius, Colors, Spacing, Typography } from "@/constants/Styles";
+import { useCategories } from "@/hooks/useCategories";
+import { useMachines } from "@/hooks/useMachine";
+import { usePerformances } from "@/hooks/usePerformances";
 import { supabase } from "@/utils/supabase";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "expo-router";
@@ -17,7 +20,14 @@ import {
 export default function ProfileScreen() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [totalExercises, setTotalExercises] = useState<number>(0);
+  const [userId, setUserId] = useState<number | null>(null);
+  const [showingObjectives, setShowingObjectives] = useState(false);
+  const [showingHistory, setShowingHistory] = useState(false);
   const router = useRouter();
+  const { machines } = useMachines();
+  const { categories } = useCategories();
+  const { performances } = usePerformances(userId);
 
   useEffect(() => {
     // Get current user
@@ -34,6 +44,21 @@ export default function ProfileScreen() {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    // Fetch total exercises count
+    const fetchTotalExercises = async () => {
+      const { count, error } = await supabase
+        .from("exercices")
+        .select("*", { count: "exact", head: true });
+
+      if (!error && count !== null) {
+        setTotalExercises(count);
+      }
+    };
+
+    fetchTotalExercises();
   }, []);
 
   const handleSignOut = async () => {
@@ -88,23 +113,117 @@ export default function ProfileScreen() {
           {user && <Text style={styles.email}>{user.email}</Text>}
         </View>
 
+        {/* Statistics Section */}
+        {user && (
+          <View style={styles.statsSection}>
+            <Text style={styles.statsTitle}>📊 Mes statistiques</Text>
+            <View style={styles.statsGrid}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{machines.length}</Text>
+                <Text style={styles.statLabel}>Machines</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{categories.length - 1}</Text>
+                <Text style={styles.statLabel}>Catégories</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{totalExercises}</Text>
+                <Text style={styles.statLabel}>Exercices</Text>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Objectives Section */}
+        {user && showingObjectives && (
+          <View style={styles.objectivesSection}>
+            <Text style={styles.objectivesTitle}>🎯 Mes objectifs</Text>
+            <View style={styles.objectivesList}>
+              <View style={styles.objectiveItem}>
+                <Text style={styles.objectiveIcon}>💪</Text>
+                <Text style={styles.objectiveText}>
+                  Développer la force musculaire
+                </Text>
+              </View>
+              <View style={styles.objectiveItem}>
+                <Text style={styles.objectiveIcon}>🏃</Text>
+                <Text style={styles.objectiveText}>
+                  Améliorer l'endurance cardiovasculaire
+                </Text>
+              </View>
+              <View style={styles.objectiveItem}>
+                <Text style={styles.objectiveIcon}>⚖️</Text>
+                <Text style={styles.objectiveText}>
+                  Maintenir un poids santé
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* History Section */}
+        {user && showingHistory && (
+          <View style={styles.historySection}>
+            <Text style={styles.historyTitle}>📅 Historique récent</Text>
+            <View style={styles.historyList}>
+              {performances.length > 0 ? (
+                performances.map((performance) => (
+                  <View
+                    key={performance.performance_id}
+                    style={styles.historyItem}
+                  >
+                    <View style={styles.historyContent}>
+                      <Text style={styles.historyExercise}>
+                        {performance.exercices?.titre_exercice ||
+                          "Exercice inconnu"}
+                      </Text>
+                      <Text style={styles.historyDetails}>
+                        {performance.series_effectuees || 0} séries ×{" "}
+                        {performance.repetitions_effectuees || 0} répétitions
+                        {performance.charge_utilisee &&
+                          ` • ${performance.charge_utilisee}kg`}
+                      </Text>
+                      <Text style={styles.historyDate}>
+                        {performance.date_scan
+                          ? new Date(performance.date_scan).toLocaleDateString(
+                              "fr-FR",
+                            )
+                          : "Date inconnue"}
+                      </Text>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.noHistoryText}>
+                  Aucun historique disponible
+                </Text>
+              )}
+            </View>
+          </View>
+        )}
+
         {/* Menu Items */}
         <View style={styles.menuSection}>
           {user ? (
             <>
-              <TouchableOpacity style={styles.menuItem}>
-                <Text style={styles.menuItemText}>📊 Mes statistiques</Text>
-                <Text style={styles.menuItemArrow}>›</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => setShowingObjectives(!showingObjectives)}
+              >
                 <Text style={styles.menuItemText}>🎯 Mes objectifs</Text>
-                <Text style={styles.menuItemArrow}>›</Text>
+                <Text style={styles.menuItemArrow}>
+                  {showingObjectives ? "⌄" : "›"}
+                </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => setShowingHistory(!showingHistory)}
+              >
                 <Text style={styles.menuItemText}>📅 Historique</Text>
-                <Text style={styles.menuItemArrow}>›</Text>
+                <Text style={styles.menuItemArrow}>
+                  {showingHistory ? "⌄" : "›"}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.menuItem}>
@@ -274,5 +393,107 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: Typography.fontSize.sm,
     color: Colors.text.secondary,
+  },
+  statsSection: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.lg,
+    backgroundColor: Colors.primary.dark,
+  },
+  statsTitle: {
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.primary,
+    marginBottom: Spacing.md,
+  },
+  statsGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  statItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+  statNumber: {
+    fontSize: Typography.fontSize.xxxl,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.primary.main,
+    marginBottom: Spacing.xs,
+  },
+  statLabel: {
+    fontSize: Typography.fontSize.md,
+    color: Colors.text.secondary,
+    textAlign: "center",
+  },
+  objectivesSection: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.lg,
+    backgroundColor: Colors.primary.dark,
+  },
+  objectivesTitle: {
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.primary,
+    marginBottom: Spacing.md,
+  },
+  objectivesList: {
+    gap: Spacing.sm,
+  },
+  objectiveItem: {
+    backgroundColor: Colors.background.card,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  objectiveIcon: {
+    fontSize: Typography.fontSize.xl,
+    marginRight: Spacing.md,
+  },
+  objectiveText: {
+    fontSize: Typography.fontSize.md,
+    color: Colors.text.primary,
+    flex: 1,
+  },
+  historySection: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.lg,
+    backgroundColor: Colors.primary.dark,
+  },
+  historyTitle: {
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.primary,
+    marginBottom: Spacing.md,
+  },
+  historyList: {
+    gap: Spacing.sm,
+  },
+  historyItem: {
+    backgroundColor: Colors.background.card,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+  },
+  historyContent: {
+    gap: Spacing.xs,
+  },
+  historyExercise: {
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text.primary,
+  },
+  historyDetails: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.secondary,
+  },
+  historyDate: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.secondary,
+    fontStyle: "italic",
+  },
+  noHistoryText: {
+    fontSize: Typography.fontSize.md,
+    color: Colors.text.secondary,
+    textAlign: "center",
+    fontStyle: "italic",
   },
 });
