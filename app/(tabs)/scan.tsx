@@ -1,17 +1,25 @@
-import { BorderRadius, Colors, Spacing, Typography } from '@/constants/Styles';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { Dimensions, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BorderRadius, Colors, Spacing, Typography } from "@/constants/Styles";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { router } from "expo-router";
+import { useState } from "react";
+import {
+  Dimensions,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const SCAN_AREA_SIZE = Math.min(SCREEN_WIDTH * 0.75, 300);
 
 export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [scannedData, setScannedData] = useState({ type: '', data: '' });
+  const [scannedData, setScannedData] = useState({ type: "", data: "" });
 
   if (!permission) {
     // Camera permissions are still loading
@@ -22,7 +30,9 @@ export default function ScanScreen() {
     // Camera permissions are not granted yet
     return (
       <View style={styles.container}>
-        <Text style={styles.message}>Nous avons besoin de votre permission pour utiliser la caméra</Text>
+        <Text style={styles.message}>
+          Nous avons besoin de votre permission pour utiliser la caméra
+        </Text>
         <TouchableOpacity style={styles.button} onPress={requestPermission}>
           <Text style={styles.buttonText}>Autoriser la caméra</Text>
         </TouchableOpacity>
@@ -30,7 +40,13 @@ export default function ScanScreen() {
     );
   }
 
-  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
+  const handleBarCodeScanned = ({
+    type,
+    data,
+  }: {
+    type: string;
+    data: string;
+  }) => {
     setScanned(true);
     setScannedData({ type, data });
     setModalVisible(true);
@@ -57,7 +73,7 @@ export default function ScanScreen() {
   return (
     <View style={styles.container}>
       {/* Close button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.closeButton}
         onPress={() => router.back()}
       >
@@ -76,7 +92,7 @@ export default function ScanScreen() {
           facing="back"
           onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
           barcodeScannerSettings={{
-            barcodeTypes: ['qr'],
+            barcodeTypes: ["qr"],
           }}
         />
       </View>
@@ -94,11 +110,11 @@ export default function ScanScreen() {
         <Text style={styles.instructions}>
           Point your camera at the QR code on the machine.
         </Text>
-        
+
         {/* Flashlight icon */}
-        <View style={styles.flashlightIcon}>
+        {/* <View style={styles.flashlightIcon}>
           <Text style={styles.flashlightText}>🔦</Text>
-        </View>
+        </View> */}
       </View>
 
       {/* Modal for scanned data */}
@@ -120,7 +136,9 @@ export default function ScanScreen() {
                 style={[styles.modalButton, styles.modalButtonSecondary]}
                 onPress={handleCloseModal}
               >
-                <Text style={styles.modalButtonTextSecondary}>Scanner une autre</Text>
+                <Text style={styles.modalButtonTextSecondary}>
+                  Scanner une autre
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalButton}
@@ -140,12 +158,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.primary.dark,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   header: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40,
-    alignSelf: 'center',
+    position: "absolute",
+    top: Platform.OS === "ios" ? 60 : 40,
+    alignSelf: "center",
     zIndex: 10,
   },
   title: {
@@ -154,15 +172,15 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
   },
   closeButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40,
+    position: "absolute",
+    top: Platform.OS === "ios" ? 60 : 40,
     left: Spacing.lg,
     zIndex: 10,
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: BorderRadius.full,
   },
   closeButtonText: {
@@ -171,23 +189,23 @@ const styles = StyleSheet.create({
   },
   cameraContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   camera: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   scanFrame: {
-    position: 'absolute',
+    position: "absolute",
     top: (SCREEN_HEIGHT - SCAN_AREA_SIZE) / 2,
     left: (SCREEN_WIDTH - SCAN_AREA_SIZE) / 2,
     width: SCAN_AREA_SIZE,
     height: SCAN_AREA_SIZE,
-    pointerEvents: 'none',
+    pointerEvents: "none",
   },
   corner: {
-    position: 'absolute',
+    position: "absolute",
     width: 60,
     height: 60,
     borderColor: Colors.primary.main,
@@ -221,24 +239,24 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: BorderRadius.md,
   },
   footer: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 100 : 80,
-    alignSelf: 'center',
-    alignItems: 'center',
+    position: "absolute",
+    bottom: Platform.OS === "ios" ? 100 : 80,
+    alignSelf: "center",
+    alignItems: "center",
     paddingHorizontal: Spacing.xl,
   },
   instructions: {
     fontSize: Typography.fontSize.md,
     color: Colors.text.primary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: Spacing.lg,
   },
   flashlightIcon: {
     width: 50,
     height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
     borderRadius: BorderRadius.full,
   },
   flashlightText: {
@@ -247,7 +265,7 @@ const styles = StyleSheet.create({
   message: {
     fontSize: Typography.fontSize.lg,
     color: Colors.text.primary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: Spacing.xl,
     paddingHorizontal: Spacing.xl,
   },
@@ -262,27 +280,27 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.md,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.primary.dark,
-    textAlign: 'center',
+    textAlign: "center",
   },
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
     backgroundColor: Colors.background.card,
     borderRadius: BorderRadius.xl,
     padding: Spacing.xl,
-    width: '85%',
+    width: "85%",
     maxWidth: 400,
   },
   modalTitle: {
     fontSize: Typography.fontSize.xxl,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.primary.main,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: Spacing.lg,
   },
   modalDataContainer: {
@@ -303,7 +321,7 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeight.medium,
   },
   modalButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.sm,
   },
   modalButton: {
@@ -311,7 +329,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary.main,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.md,
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalButtonSecondary: {
     backgroundColor: Colors.background.input,
@@ -327,4 +345,3 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
   },
 });
-  

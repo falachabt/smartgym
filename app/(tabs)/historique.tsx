@@ -3,8 +3,9 @@ import { BorderRadius, Colors, Spacing, Typography } from "@/constants/Styles";
 import { getUserIdFromAuth } from "@/utils/database";
 import { supabase } from "@/utils/supabase";
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Dimensions,
@@ -37,6 +38,9 @@ export default function HistoriqueScreen() {
     PerformancesByMachine[]
   >([]);
   const [expandedMachine, setExpandedMachine] = useState<number | null>(null);
+  const [showAllPerformances, setShowAllPerformances] = useState<
+    Record<number, boolean>
+  >({});
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -48,64 +52,73 @@ export default function HistoriqueScreen() {
     });
   }, []);
 
-  useEffect(() => {
+  const fetchGroupedPerformances = useCallback(async () => {
     if (!userId) return;
 
-    const fetchGroupedPerformances = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("performances")
-        .select(
-          `
-          *,
-          exercices (
-            exercice_id,
-            titre_exercice,
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("performances")
+      .select(
+        `
+        *,
+        exercices (
+          exercice_id,
+          titre_exercice,
+          machine_id,
+          machines (
             machine_id,
-            machines (
-              machine_id,
-              nom_machine
-            )
+            nom_machine
           )
-        `,
         )
-        .eq("utilisateur_id", userId)
-        .order("date_scan", { ascending: false });
+      `,
+      )
+      .eq("utilisateur_id", userId)
+      .order("date_scan", { ascending: false });
 
-      if (!error && data) {
-        const grouped: Record<string, PerformancesByMachine> = {};
+    if (!error && data) {
+      const grouped: Record<string, PerformancesByMachine> = {};
 
-        data.forEach((perf: any) => {
-          if (!perf.exercices?.machines) return;
+      data.forEach((perf: any) => {
+        if (!perf.exercices?.machines) return;
 
-          const machineId = perf.exercices.machines.machine_id;
-          const key = `machine_${machineId}`;
+        const machineId = perf.exercices.machines.machine_id;
+        const key = `machine_${machineId}`;
 
-          if (!grouped[key]) {
-            grouped[key] = {
-              machineId,
-              machineName: perf.exercices.machines.nom_machine,
-              exerciseName: perf.exercices.titre_exercice,
-              exerciseId: perf.exercices.exercice_id,
-              performances: [],
-            };
-          }
+        if (!grouped[key]) {
+          grouped[key] = {
+            machineId,
+            machineName: perf.exercices.machines.nom_machine,
+            exerciseName: perf.exercices.titre_exercice,
+            exerciseId: perf.exercices.exercice_id,
+            performances: [],
+          };
+        }
 
-          grouped[key].performances.push({
-            date: perf.date_scan,
-            series: perf.series_effectuees || 0,
-            reps: perf.repetitions_effectuees || 0,
-            charge: perf.charge_utilisee,
-          });
+        grouped[key].performances.push({
+          date: perf.date_scan,
+          series: perf.series_effectuees || 0,
+          reps: perf.repetitions_effectuees || 0,
+          charge: perf.charge_utilisee,
         });
+      });
 
-        setGroupedPerformances(Object.values(grouped));
-      }
-      setLoading(false);
-    };
-
-    fetchGroupedPerformances();
+      setGroupedPerformances(Object.values(grouped));
+    }
+    setLoading(false);
   }, [userId]);
+
+  useEffect(() => {
+    fetchGroupedPerformances();
+  }, [userId, fetchGroupedPerformances]);
+
+  // Rafraîchir quand l'utilisateur revient sur la page
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) {
+        fetchGroupedPerformances();
+      }
+    }, [userId, fetchGroupedPerformances]),
+  );
 
   const handleOpenAddModal = () => {
     router.push("/(tabs)/scan");
@@ -319,23 +332,57 @@ export default function HistoriqueScreen() {
                   )}
 
                   <Text style={styles.listTitle}>Historique détaillé</Text>
-                  {machineData.performances.map((perf, index) => (
-                    <View key={index} style={styles.perfItem}>
-                      <View style={styles.perfInfo}>
-                        <Text style={styles.perfDetails}>
-                          {perf.series} séries × {perf.reps} reps
-                          {perf.charge && ` • ${perf.charge}kg`}
-                        </Text>
-                        <Text style={styles.perfDate}>
-                          {new Date(perf.date).toLocaleDateString("fr-FR", {
-                            day: "2-digit",
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </Text>
+                  <ScrollView
+                    style={styles.perfListContainer}
+                    nestedScrollEnabled={true}
+                  >
+                    {(showAllPerformances[machineData.machineId]
+                      ? machineData.performances
+                      : machineData.performances.slice(0, 3)
+                    ).map((perf, index) => (
+                      <View key={index} style={styles.perfItem}>
+                        <View style={styles.perfInfo}>
+                          <Text style={styles.perfDetails}>
+                            {perf.series} séries × {perf.reps} reps
+                            {perf.charge && ` • ${perf.charge}kg`}
+                          </Text>
+                          <Text style={styles.perfDate}>
+                            {new Date(perf.date).toLocaleDateString("fr-FR", {
+                              day: "2-digit",
+                              month: "long",
+                              year: "numeric",
+                            })}
+                          </Text>
+                        </View>
                       </View>
-                    </View>
-                  ))}
+                    ))}
+                  </ScrollView>
+                  {machineData.performances.length > 3 && (
+                    <TouchableOpacity
+                      style={styles.showMoreButton}
+                      onPress={() =>
+                        setShowAllPerformances((prev) => ({
+                          ...prev,
+                          [machineData.machineId]: !prev[machineData.machineId],
+                        }))
+                      }
+                    >
+                      <Text style={styles.showMoreText}>
+                        {showAllPerformances[machineData.machineId]
+                          ? "Voir moins"
+                          : `Voir tout (${machineData.performances.length} séances)`}
+                      </Text>
+                      <Ionicons
+                        name={
+                          showAllPerformances[machineData.machineId]
+                            ? "chevron-up"
+                            : "chevron-down"
+                        }
+                        size={20}
+                        color={Colors.primary.main}
+                      />
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
             </View>
@@ -479,6 +526,10 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     backgroundColor: Colors.background.card,
   },
+  perfListContainer: {
+    maxHeight: 300,
+    backgroundColor: "transparent",
+  },
   perfItem: {
     backgroundColor: Colors.background.input,
     padding: Spacing.md,
@@ -499,6 +550,20 @@ const styles = StyleSheet.create({
     color: Colors.text.secondary,
     marginTop: Spacing.xs,
     backgroundColor: Colors.background.input,
+  },
+  showMoreButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.xs,
+    paddingVertical: Spacing.md,
+    marginTop: Spacing.sm,
+    backgroundColor: "transparent",
+  },
+  showMoreText: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.primary.main,
+    fontWeight: Typography.fontWeight.medium,
   },
   fabButton: {
     position: "absolute",

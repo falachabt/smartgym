@@ -1,13 +1,13 @@
 import { BorderRadius, Colors, Spacing, Typography } from "@/constants/Styles";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
-    Dimensions,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -600,141 +600,148 @@ export default function NutritionScreen() {
   const currentPlan = machine.nutritionPlans[selectedLevel];
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{machine.name} Nutrition</Text>
+        </View>
+
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{machine.name} Nutrition</Text>
-      </View>
+          {/* Plan Title */}
+          <View style={styles.titleSection}>
+            <Text style={styles.planTitle}>{currentPlan.title}</Text>
+            <Text style={styles.planDescription}>
+              {currentPlan.description}
+            </Text>
+          </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Plan Title */}
-        <View style={styles.titleSection}>
-          <Text style={styles.planTitle}>{currentPlan.title}</Text>
-          <Text style={styles.planDescription}>{currentPlan.description}</Text>
-        </View>
+          {/* Level Selector */}
+          <View style={styles.levelSelector}>
+            {(["beginner", "intermediate", "advanced"] as const).map(
+              (level) => (
+                <TouchableOpacity
+                  key={level}
+                  style={[
+                    styles.levelButton,
+                    selectedLevel === level && styles.levelButtonActive,
+                  ]}
+                  onPress={() => setSelectedLevel(level)}
+                >
+                  <Text
+                    style={[
+                      styles.levelButtonText,
+                      selectedLevel === level && styles.levelButtonTextActive,
+                    ]}
+                  >
+                    {level.charAt(0).toUpperCase() + level.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              ),
+            )}
+          </View>
 
-        {/* Level Selector */}
-        <View style={styles.levelSelector}>
-          {(["beginner", "intermediate", "advanced"] as const).map((level) => (
-            <TouchableOpacity
-              key={level}
-              style={[
-                styles.levelButton,
-                selectedLevel === level && styles.levelButtonActive,
-              ]}
-              onPress={() => setSelectedLevel(level)}
-            >
-              <Text
-                style={[
-                  styles.levelButtonText,
-                  selectedLevel === level && styles.levelButtonTextActive,
-                ]}
-              >
-                {level.charAt(0).toUpperCase() + level.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+          {/* Calories and Macros */}
+          <View style={styles.overviewSection}>
+            <Text style={styles.sectionTitle}>Daily Overview</Text>
 
-        {/* Calories and Macros */}
-        <View style={styles.overviewSection}>
-          <Text style={styles.sectionTitle}>Daily Overview</Text>
+            <View style={styles.overviewGrid}>
+              <View style={styles.overviewBox}>
+                <Text style={styles.overviewLabel}>CALORIES</Text>
+                <Text style={styles.overviewValue}>{currentPlan.calories}</Text>
+              </View>
 
-          <View style={styles.overviewGrid}>
-            <View style={styles.overviewBox}>
-              <Text style={styles.overviewLabel}>CALORIES</Text>
-              <Text style={styles.overviewValue}>{currentPlan.calories}</Text>
-            </View>
+              <View style={styles.overviewBox}>
+                <Text style={styles.overviewLabel}>PROTEIN</Text>
+                <Text style={styles.overviewValue}>
+                  {currentPlan.macros.protein}
+                </Text>
+              </View>
 
-            <View style={styles.overviewBox}>
-              <Text style={styles.overviewLabel}>PROTEIN</Text>
-              <Text style={styles.overviewValue}>
-                {currentPlan.macros.protein}
-              </Text>
-            </View>
+              <View style={styles.overviewBox}>
+                <Text style={styles.overviewLabel}>CARBS</Text>
+                <Text style={styles.overviewValue}>
+                  {currentPlan.macros.carbs}
+                </Text>
+              </View>
 
-            <View style={styles.overviewBox}>
-              <Text style={styles.overviewLabel}>CARBS</Text>
-              <Text style={styles.overviewValue}>
-                {currentPlan.macros.carbs}
-              </Text>
-            </View>
-
-            <View style={styles.overviewBox}>
-              <Text style={styles.overviewLabel}>FATS</Text>
-              <Text style={styles.overviewValue}>
-                {currentPlan.macros.fats}
-              </Text>
+              <View style={styles.overviewBox}>
+                <Text style={styles.overviewLabel}>FATS</Text>
+                <Text style={styles.overviewValue}>
+                  {currentPlan.macros.fats}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* Meal Plan */}
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.sectionHeader}
-            onPress={() => toggleSection("meals")}
-          >
-            <Text style={styles.sectionTitle}>Meal Plan</Text>
-            <Text style={styles.sectionArrow}>
-              {expandedSections.meals ? "▲" : "▼"}
-            </Text>
-          </TouchableOpacity>
+          {/* Meal Plan */}
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={styles.sectionHeader}
+              onPress={() => toggleSection("meals")}
+            >
+              <Text style={styles.sectionTitle}>Meal Plan</Text>
+              <Text style={styles.sectionArrow}>
+                {expandedSections.meals ? "▲" : "▼"}
+              </Text>
+            </TouchableOpacity>
 
-          {expandedSections.meals && (
-            <View style={styles.sectionContent}>
-              {currentPlan.meals.map((meal: any, index: number) => (
-                <View key={index} style={styles.mealItem}>
-                  <View style={styles.mealHeader}>
-                    <Text style={styles.mealTime}>{meal.time}</Text>
-                    <Text style={styles.mealCalories}>{meal.calories}</Text>
+            {expandedSections.meals && (
+              <View style={styles.sectionContent}>
+                {currentPlan.meals.map((meal: any, index: number) => (
+                  <View key={index} style={styles.mealItem}>
+                    <View style={styles.mealHeader}>
+                      <Text style={styles.mealTime}>{meal.time}</Text>
+                      <Text style={styles.mealCalories}>{meal.calories}</Text>
+                    </View>
+                    {meal.items.map((item: string, itemIndex: number) => (
+                      <Text key={itemIndex} style={styles.mealItemText}>
+                        • {item}
+                      </Text>
+                    ))}
                   </View>
-                  {meal.items.map((item: string, itemIndex: number) => (
-                    <Text key={itemIndex} style={styles.mealItemText}>
-                      • {item}
-                    </Text>
-                  ))}
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
+                ))}
+              </View>
+            )}
+          </View>
 
-        {/* Nutrition Tips */}
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.sectionHeader}
-            onPress={() => toggleSection("tips")}
-          >
-            <Text style={styles.sectionTitle}>Nutrition Tips</Text>
-            <Text style={styles.sectionArrow}>
-              {expandedSections.tips ? "▲" : "▼"}
-            </Text>
-          </TouchableOpacity>
+          {/* Nutrition Tips */}
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={styles.sectionHeader}
+              onPress={() => toggleSection("tips")}
+            >
+              <Text style={styles.sectionTitle}>Nutrition Tips</Text>
+              <Text style={styles.sectionArrow}>
+                {expandedSections.tips ? "▲" : "▼"}
+              </Text>
+            </TouchableOpacity>
 
-          {expandedSections.tips && (
-            <View style={styles.sectionContent}>
-              {currentPlan.tips.map((tip: string, index: number) => (
-                <Text key={index} style={styles.bulletPoint}>
-                  • {tip}
-                </Text>
-              ))}
-            </View>
-          )}
-        </View>
+            {expandedSections.tips && (
+              <View style={styles.sectionContent}>
+                {currentPlan.tips.map((tip: string, index: number) => (
+                  <Text key={index} style={styles.bulletPoint}>
+                    • {tip}
+                  </Text>
+                ))}
+              </View>
+            )}
+          </View>
 
-        <View style={{ height: 40 }} />
-      </ScrollView>
-    </View>
+          <View style={{ height: 40 }} />
+        </ScrollView>
+      </View>
+    </>
   );
 }
 

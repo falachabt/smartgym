@@ -267,7 +267,7 @@ export default function NotificationsScreen() {
       />
 
       {/* Header */}
-      {/* <View style={styles.header}>
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
@@ -276,7 +276,7 @@ export default function NotificationsScreen() {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
         <View style={styles.placeholder} />
-      </View> */}
+      </View>
 
       <ScrollView
         style={styles.scrollView}
