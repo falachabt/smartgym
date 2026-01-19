@@ -322,7 +322,7 @@ export default function NotificationsScreen() {
               </View>
               <View style={styles.card}>
                 {days.map((day) => (
-                  <View key={day.id}>
+                  <View key={day.id} style={{ backgroundColor: "transparent" }}>
                     <TouchableOpacity
                       style={[
                         styles.dayItem,
