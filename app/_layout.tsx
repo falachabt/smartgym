@@ -125,6 +125,22 @@ function RootLayoutNav() {
 
     const inOnboarding = segments[0] === "onboarding";
     const inLogin = segments[0] === "login";
+    const inTabs = segments[0] === "(tabs)";
+
+    // Si on arrive sur (tabs) et qu'on n'a pas vu l'onboarding, on recharge la valeur
+    // car elle a peut-être été mise à jour depuis login
+    if (inTabs && !hasSeenOnboarding) {
+      async function recheckOnboarding() {
+        const seen = await AsyncStorage.getItem("hasSeenOnboarding");
+        if (seen === "true") {
+          setHasSeenOnboarding(true);
+        } else {
+          router.replace("/onboarding");
+        }
+      }
+      recheckOnboarding();
+      return;
+    }
 
     if (!hasSeenOnboarding && !inOnboarding && !inLogin) {
       router.replace("/onboarding");
