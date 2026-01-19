@@ -19,7 +19,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const MACHINES_DATA: Record<string, any> = {
   "leg-press": {
     id: "leg-press",
-    name: "Leg Press Machine",
+    name: "",
     image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800",
     videoThumbnail:
       "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
@@ -829,11 +829,7 @@ export default function MachineDetailsScreen() {
 
         {/* Targeted Muscles */}
         <View style={styles.musclesSection}>
-          <Text style={styles.musclesSectionTitle}>Targeted Muscles</Text>
-          <Image
-            source={{ uri: machine.muscleImage }}
-            style={styles.muscleImage}
-          />
+          <Text style={styles.musclesSectionTitle}></Text>
         </View>
 
         {/* Recommended Weights */}
