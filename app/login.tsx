@@ -15,6 +15,7 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -51,7 +52,7 @@ export default function LoginScreen() {
             Alert.alert(
               "Inscription réussie",
               "Votre compte a été créé avec succès !",
-              [{ text: "OK", onPress: () => router.replace("/(tabs)") }]
+              [{ text: "OK", onPress: () => router.replace("/(tabs)") }],
             );
           }
         }
@@ -78,14 +79,17 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resend({
-        type: 'signup',
+        type: "signup",
         email,
       });
 
       if (error) {
         Alert.alert("Erreur", error.message);
       } else {
-        Alert.alert("Email envoyé", "Un nouvel email de vérification a été envoyé");
+        Alert.alert(
+          "Email envoyé",
+          "Un nouvel email de vérification a été envoyé",
+        );
       }
     } catch (error: any) {
       Alert.alert("Erreur", error.message);
@@ -102,8 +106,11 @@ export default function LoginScreen() {
   if (awaitingVerification) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor={Colors.primary.dark} />
-        
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={Colors.primary.dark}
+        />
+
         <View style={styles.content}>
           <View style={styles.verificationContainer}>
             <Text style={styles.verificationIcon}>📧</Text>
@@ -113,8 +120,8 @@ export default function LoginScreen() {
               <Text style={styles.verificationEmail}>{email}</Text>
             </Text>
             <Text style={styles.verificationInstructions}>
-              Cliquez sur le lien dans l'email pour activer votre compte. 
-              Si vous ne voyez pas l'email, vérifiez vos spams.
+              Cliquez sur le lien dans l'email pour activer votre compte. Si
+              vous ne voyez pas l'email, vérifiez vos spams.
             </Text>
 
             <TouchableOpacity
@@ -136,7 +143,9 @@ export default function LoginScreen() {
                 setIsSignUp(false);
               }}
             >
-              <Text style={styles.buttonSecondaryText}>Retour à la connexion</Text>
+              <Text style={styles.buttonSecondaryText}>
+                Retour à la connexion
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -145,90 +154,95 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary.dark} />
-
-      {/* Skip Button */}
-      <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-        <Text style={styles.skipText}>Passer</Text>
-      </TouchableOpacity>
-
-      {/* Content */}
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={Colors.primary.dark}
+      />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* Logo/Title */}
-        <View style={styles.header}>
-          <Text style={styles.logo}>💪</Text>
-          <Text style={styles.title}>SmartGym</Text>
-          <Text style={styles.subtitle}>
-            {isSignUp
-              ? "Créez un compte pour synchroniser vos données"
-              : "Connectez-vous pour suivre vos performances"}
-          </Text>
-        </View>
+        {/* Skip Button */}
+        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+          <Text style={styles.skipText}>Passer</Text>
+        </TouchableOpacity>
 
-        {/* Form */}
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor={Colors.text.secondary}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            editable={!loading}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Mot de passe"
-            placeholderTextColor={Colors.text.secondary}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            editable={!loading}
-          />
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleAuth}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color={Colors.primary.dark} />
-            ) : (
-              <Text style={styles.buttonText}>
-                {isSignUp ? "S'inscrire" : "Se connecter"}
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Toggle Sign Up / Sign In */}
-          <TouchableOpacity
-            style={styles.toggleButton}
-            onPress={() => setIsSignUp(!isSignUp)}
-            disabled={loading}
-          >
-            <Text style={styles.toggleText}>
+        {/* Content */}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Logo/Title */}
+          <View style={styles.header}>
+            <Text style={styles.logo}>💪</Text>
+            <Text style={styles.title}>SmartGym</Text>
+            <Text style={styles.subtitle}>
               {isSignUp
-                ? "Déjà un compte ? Se connecter"
-                : "Pas de compte ? S'inscrire"}
+                ? "Créez un compte pour synchroniser vos données"
+                : "Connectez-vous pour suivre vos performances"}
             </Text>
-          </TouchableOpacity>
-        </View>
+          </View>
 
-        {/* Bottom Text */}
-        <Text style={styles.bottomText}>
-          Synchronisez vos données sur tous vos appareils et suivez vos progrès
-        </Text>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          {/* Form */}
+          <View style={styles.form}>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor={Colors.text.secondary}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              editable={!loading}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Mot de passe"
+              placeholderTextColor={Colors.text.secondary}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              editable={!loading}
+            />
+
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleAuth}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={Colors.primary.dark} />
+              ) : (
+                <Text style={styles.buttonText}>
+                  {isSignUp ? "S'inscrire" : "Se connecter"}
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Toggle Sign Up / Sign In */}
+            <TouchableOpacity
+              style={styles.toggleButton}
+              onPress={() => setIsSignUp(!isSignUp)}
+              disabled={loading}
+            >
+              <Text style={styles.toggleText}>
+                {isSignUp
+                  ? "Déjà un compte ? Se connecter"
+                  : "Pas de compte ? S'inscrire"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Bottom Text */}
+          <Text style={styles.bottomText}>
+            Synchronisez vos données sur tous vos appareils et suivez vos
+            progrès
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -236,6 +250,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.primary.dark,
+  },
+  flex: {
+    flex: 1,
   },
   skipButton: {
     position: "absolute",

@@ -12,12 +12,14 @@ import {
   Image,
   Modal,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -774,7 +776,11 @@ export default function MachineDetailsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={Colors.primary.dark}
+      />
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -835,6 +841,7 @@ export default function MachineDetailsScreen() {
                 "",
             }}
             style={styles.videoThumbnail}
+            resizeMode="contain"
           />
         </View>
 
@@ -1047,7 +1054,7 @@ export default function MachineDetailsScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -1055,6 +1062,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.primary.dark,
+    paddingBottom: 25,
   },
   header: {
     flexDirection: "row",
@@ -1127,12 +1135,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
     borderRadius: BorderRadius.lg,
     overflow: "hidden",
-    position: "relative",
+    backgroundColor: Colors.background.card,
+    aspectRatio: 16 / 9,
   },
   videoThumbnail: {
     width: "100%",
-    height: 200,
-    backgroundColor: Colors.background.card,
+    height: "100%",
   },
   sectionsContainer: {
     marginHorizontal: Spacing.md,

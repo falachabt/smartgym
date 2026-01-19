@@ -4,13 +4,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Dimensions,
-  Image,
-  Platform,
-  StatusBar,
-  StyleSheet,
-  TouchableOpacity,
+    Dimensions,
+    Image,
+    Platform,
+    StatusBar,
+    StyleSheet,
+    TouchableOpacity,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -18,19 +19,22 @@ const ONBOARDING_STEPS = [
   {
     id: 1,
     title: "Découvrez vos machines",
-    description: "Scannez le QR code sur n'importe quelle machine pour accéder instantanément aux instructions détaillées",
+    description:
+      "Scannez le QR code sur n'importe quelle machine pour accéder instantanément aux instructions détaillées",
     image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800",
   },
   {
     id: 2,
     title: "Exercices personnalisés",
-    description: "Découvrez les meilleurs exercices pour chaque groupe musculaire avec des vidéos et des explications",
+    description:
+      "Découvrez les meilleurs exercices pour chaque groupe musculaire avec des vidéos et des explications",
     image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800",
   },
   {
     id: 3,
     title: "Suivez vos performances",
-    description: "Connectez-vous pour synchroniser et suivre vos progrès à travers toutes vos séances d'entraînement",
+    description:
+      "Connectez-vous pour synchroniser et suivre vos progrès à travers toutes vos séances d'entraînement",
     image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800",
   },
 ];
@@ -59,9 +63,12 @@ export default function OnboardingScreen() {
   const isLastStep = currentStep === ONBOARDING_STEPS.length - 1;
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary.dark} />
-      
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={Colors.primary.dark}
+      />
+
       {/* Skip Button */}
       {!isLastStep && (
         <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
@@ -71,7 +78,11 @@ export default function OnboardingScreen() {
 
       {/* Image */}
       <View style={styles.imageContainer}>
-        <Image source={{ uri: step.image }} style={styles.image} resizeMode="cover" />
+        <Image
+          source={{ uri: step.image }}
+          style={styles.image}
+          resizeMode="cover"
+        />
       </View>
 
       {/* Content */}
@@ -81,10 +92,7 @@ export default function OnboardingScreen() {
           {ONBOARDING_STEPS.map((_, index) => (
             <View
               key={index}
-              style={[
-                styles.dot,
-                index === currentStep && styles.dotActive,
-              ]}
+              style={[styles.dot, index === currentStep && styles.dotActive]}
             />
           ))}
         </View>
@@ -97,11 +105,19 @@ export default function OnboardingScreen() {
         <View style={styles.buttonsContainer}>
           {isLastStep ? (
             <>
-              <TouchableOpacity style={styles.buttonPrimary} onPress={handleFinish}>
+              <TouchableOpacity
+                style={styles.buttonPrimary}
+                onPress={handleFinish}
+              >
                 <Text style={styles.buttonPrimaryText}>Se connecter</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonSecondary} onPress={handleSkip}>
-                <Text style={styles.buttonSecondaryText}>Continuer sans compte</Text>
+              <TouchableOpacity
+                style={styles.buttonSecondary}
+                onPress={handleSkip}
+              >
+                <Text style={styles.buttonSecondaryText}>
+                  Continuer sans compte
+                </Text>
               </TouchableOpacity>
             </>
           ) : (
@@ -111,7 +127,7 @@ export default function OnboardingScreen() {
           )}
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

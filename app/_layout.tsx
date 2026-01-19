@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import "react-native-reanimated";
 
+import UpdateModal from "@/components/UpdateModal";
 import { useColorScheme } from "@/components/useColorScheme";
 
 export {
@@ -33,6 +34,8 @@ export default function RootLayout() {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
   });
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [isInstalling, setIsInstalling] = useState(false);
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
@@ -57,8 +60,7 @@ export default function RootLayout() {
         const update = await Updates.checkForUpdateAsync();
 
         if (update.isAvailable) {
-          await Updates.fetchUpdateAsync();
-          await Updates.reloadAsync();
+          setShowUpdateModal(true);
         }
       } catch (error) {
         // Handle error - you can add logging here if needed
@@ -69,11 +71,37 @@ export default function RootLayout() {
     onFetchUpdateAsync();
   }, []);
 
+  const handleInstallUpdate = async () => {
+    setIsInstalling(true);
+    try {
+      await Updates.fetchUpdateAsync();
+      await Updates.reloadAsync();
+    } catch (error) {
+      console.error("Error installing update:", error);
+      setIsInstalling(false);
+      // Optionally show error to user
+    }
+  };
+
+  const handleLaterUpdate = () => {
+    setShowUpdateModal(false);
+  };
+
   if (!loaded) {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <>
+      <RootLayoutNav />
+      <UpdateModal
+        visible={showUpdateModal}
+        onInstall={handleInstallUpdate}
+        onLater={handleLaterUpdate}
+        isInstalling={isInstalling}
+      />
+    </>
+  );
 }
 
 function RootLayoutNav() {
@@ -115,11 +143,8 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="machine" options={{ headerShown: false }} />
         <Stack.Screen name="nutrition" options={{ headerShown: false }} />
+        <Stack.Screen name="notifications" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-        <Stack.Screen
-          name="notifications"
-          options={{ presentation: "modal" }}
-        />
       </Stack>
     </ThemeProvider>
   );
