@@ -2,8 +2,11 @@ import { Text, View } from "@/components/Themed";
 import { BorderRadius, Colors, Spacing, Typography } from "@/constants/Styles";
 import { useCategories } from "@/hooks/useCategories";
 import { useMachines } from "@/hooks/useMachine";
+import { useObjectifs } from "@/hooks/useObjectifs";
 import { usePerformances } from "@/hooks/usePerformances";
+import { getUserIdFromAuth } from "@/utils/database";
 import { supabase } from "@/utils/supabase";
+import { Ionicons } from "@expo/vector-icons";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -28,19 +31,50 @@ export default function ProfileScreen() {
   const { machines } = useMachines();
   const { categories } = useCategories();
   const { performances } = usePerformances(userId);
+  const { objectifs, supprimerObjectif } = useObjectifs(userId);
+
+  const handleDeleteObjectif = (objectifId: number, description: string) => {
+    Alert.alert(
+      "Supprimer l'objectif",
+      `Êtes-vous sûr de vouloir supprimer "${description}" ?`,
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Supprimer",
+          style: "destructive",
+          onPress: () => supprimerObjectif(objectifId),
+        },
+      ],
+    );
+  };
 
   useEffect(() => {
     // Get current user
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user);
+
+      // Récupérer l'utilisateur_id depuis la table utilisateurs
+      if (user?.id) {
+        const id = await getUserIdFromAuth(user.id);
+        setUserId(id);
+      }
+
       setLoading(false);
     });
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
+
+      // Récupérer l'utilisateur_id
+      if (session?.user?.id) {
+        const id = await getUserIdFromAuth(session.user.id);
+        setUserId(id);
+      } else {
+        setUserId(null);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -105,9 +139,13 @@ export default function ProfileScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>
-              {user?.email?.charAt(0).toUpperCase() || "👤"}
-            </Text>
+            {user ? (
+              <Text style={styles.avatarText}>
+                {user.email?.charAt(0).toUpperCase()}
+              </Text>
+            ) : (
+              <Ionicons name="person" size={50} color={Colors.primary.dark} />
+            )}
           </View>
           <Text style={styles.name}>{user?.email || "Visiteur"}</Text>
           {user && <Text style={styles.email}>{user.email}</Text>}
@@ -116,7 +154,14 @@ export default function ProfileScreen() {
         {/* Statistics Section */}
         {user && (
           <View style={styles.statsSection}>
-            <Text style={styles.statsTitle}>📊 Mes statistiques</Text>
+            <View style={styles.sectionHeader}>
+              <Ionicons
+                name="stats-chart"
+                size={24}
+                color={Colors.primary.main}
+              />
+              <Text style={styles.statsTitle}>Mes statistiques</Text>
+            </View>
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
                 <Text style={styles.statNumber}>{machines.length}</Text>
@@ -137,26 +182,67 @@ export default function ProfileScreen() {
         {/* Objectives Section */}
         {user && showingObjectives && (
           <View style={styles.objectivesSection}>
-            <Text style={styles.objectivesTitle}>🎯 Mes objectifs</Text>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="trophy" size={24} color={Colors.primary.main} />
+              <Text style={styles.objectivesTitle}>Mes objectifs</Text>
+              <TouchableOpacity
+                onPress={() => router.push("/objectifs" as any)}
+                style={styles.editHeaderButton}
+              >
+                <Ionicons name="create" size={20} color={Colors.primary.main} />
+              </TouchableOpacity>
+            </View>
             <View style={styles.objectivesList}>
-              <View style={styles.objectiveItem}>
-                <Text style={styles.objectiveIcon}>💪</Text>
-                <Text style={styles.objectiveText}>
-                  Développer la force musculaire
-                </Text>
-              </View>
-              <View style={styles.objectiveItem}>
-                <Text style={styles.objectiveIcon}>🏃</Text>
-                <Text style={styles.objectiveText}>
-                  Améliorer l'endurance cardiovasculaire
-                </Text>
-              </View>
-              <View style={styles.objectiveItem}>
-                <Text style={styles.objectiveIcon}>⚖️</Text>
-                <Text style={styles.objectiveText}>
-                  Maintenir un poids santé
-                </Text>
-              </View>
+              {objectifs.length > 0 ? (
+                objectifs.map((objectif) => (
+                  <View key={objectif.objectif_id} style={styles.objectiveItem}>
+                    <View style={styles.objectiveContent}>
+                      <Ionicons
+                        name={
+                          objectif.type_objectif === "force"
+                            ? "barbell"
+                            : objectif.type_objectif === "endurance"
+                              ? "fitness"
+                              : "scale"
+                        }
+                        size={24}
+                        color={Colors.primary.main}
+                        style={styles.objectiveIcon}
+                      />
+                      <Text style={styles.objectiveText}>
+                        {objectif.description}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() =>
+                        handleDeleteObjectif(
+                          objectif.objectif_id,
+                          objectif.description,
+                        )
+                      }
+                      style={styles.deleteButton}
+                    >
+                      <Ionicons
+                        name="trash"
+                        size={20}
+                        color={Colors.accent.red}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.objectiveItem}>
+                  <Ionicons
+                    name="barbell"
+                    size={24}
+                    color={Colors.primary.main}
+                    style={styles.objectiveIcon}
+                  />
+                  <Text style={styles.objectiveText}>
+                    Développer la force musculaire
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
         )}
@@ -164,7 +250,10 @@ export default function ProfileScreen() {
         {/* History Section */}
         {user && showingHistory && (
           <View style={styles.historySection}>
-            <Text style={styles.historyTitle}>📅 Historique récent</Text>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="calendar" size={24} color={Colors.primary.main} />
+              <Text style={styles.historyTitle}>Historique récent</Text>
+            </View>
             <View style={styles.historyList}>
               {performances.length > 0 ? (
                 performances.map((performance) => (
@@ -210,32 +299,71 @@ export default function ProfileScreen() {
                 style={styles.menuItem}
                 onPress={() => setShowingObjectives(!showingObjectives)}
               >
-                <Text style={styles.menuItemText}>🎯 Mes objectifs</Text>
-                <Text style={styles.menuItemArrow}>
-                  {showingObjectives ? "⌄" : "›"}
-                </Text>
+                <View style={styles.menuItemContent}>
+                  <Ionicons
+                    name="trophy"
+                    size={20}
+                    color={Colors.text.primary}
+                  />
+                  <Text style={styles.menuItemText}>Mes objectifs</Text>
+                </View>
+                <Ionicons
+                  name={showingObjectives ? "chevron-down" : "chevron-forward"}
+                  size={20}
+                  color={Colors.text.secondary}
+                />
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.menuItem}
                 onPress={() => setShowingHistory(!showingHistory)}
               >
-                <Text style={styles.menuItemText}>📅 Historique</Text>
-                <Text style={styles.menuItemArrow}>
-                  {showingHistory ? "⌄" : "›"}
-                </Text>
+                <View style={styles.menuItemContent}>
+                  <Ionicons
+                    name="calendar"
+                    size={20}
+                    color={Colors.text.primary}
+                  />
+                  <Text style={styles.menuItemText}>Historique</Text>
+                </View>
+                <Ionicons
+                  name={showingHistory ? "chevron-down" : "chevron-forward"}
+                  size={20}
+                  color={Colors.text.secondary}
+                />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem}>
-                <Text style={styles.menuItemText}>⚙️ Paramètres</Text>
-                <Text style={styles.menuItemArrow}>›</Text>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => router.push("/notifications" as any)}
+              >
+                <View style={styles.menuItemContent}>
+                  <Ionicons
+                    name="notifications"
+                    size={20}
+                    color={Colors.text.primary}
+                  />
+                  <Text style={styles.menuItemText}>Notifications</Text>
+                </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={20}
+                  color={Colors.text.secondary}
+                />
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.menuItem, styles.menuItemDanger]}
                 onPress={handleSignOut}
               >
-                <Text style={styles.menuItemTextDanger}>🚪 Déconnexion</Text>
+                <View style={styles.menuItemContent}>
+                  <Ionicons
+                    name="log-out"
+                    size={20}
+                    color={Colors.accent.red}
+                  />
+                  <Text style={styles.menuItemTextDanger}>Déconnexion</Text>
+                </View>
               </TouchableOpacity>
             </>
           ) : (
@@ -255,16 +383,6 @@ export default function ProfileScreen() {
                   <Text style={styles.loginButtonText}>Se connecter</Text>
                 </TouchableOpacity>
               </View>
-
-              <TouchableOpacity style={styles.menuItem}>
-                <Text style={styles.menuItemText}>⚙️ Paramètres</Text>
-                <Text style={styles.menuItemArrow}>›</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem}>
-                <Text style={styles.menuItemText}>❓ Aide</Text>
-                <Text style={styles.menuItemArrow}>›</Text>
-              </TouchableOpacity>
             </>
           )}
         </View>
@@ -312,16 +430,19 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.primary.dark,
+    backgroundColor: Colors.primary.main,
   },
   name: {
     fontSize: Typography.fontSize.xxl,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.text.primary,
     marginBottom: Spacing.xs,
+    backgroundColor: Colors.primary.dark,
   },
   email: {
     fontSize: Typography.fontSize.md,
     color: Colors.text.secondary,
+    backgroundColor: Colors.primary.dark,
   },
   menuSection: {
     paddingHorizontal: Spacing.lg,
@@ -337,14 +458,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  menuItemContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+    backgroundColor: Colors.background.card,
+  },
   menuItemText: {
     fontSize: Typography.fontSize.md,
     color: Colors.text.primary,
     fontWeight: Typography.fontWeight.medium,
-  },
-  menuItemArrow: {
-    fontSize: Typography.fontSize.xl,
-    color: Colors.text.secondary,
+    backgroundColor: Colors.background.card,
   },
   menuItemDanger: {
     marginTop: Spacing.md,
@@ -353,6 +477,7 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.md,
     color: Colors.accent.red,
     fontWeight: Typography.fontWeight.medium,
+    backgroundColor: Colors.background.card,
   },
   loginPrompt: {
     backgroundColor: Colors.background.card,
@@ -365,12 +490,14 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeight.bold,
     color: Colors.text.primary,
     marginBottom: Spacing.sm,
+    backgroundColor: Colors.background.card,
   },
   loginPromptText: {
     fontSize: Typography.fontSize.md,
     color: Colors.text.secondary,
     lineHeight: 22,
     marginBottom: Spacing.lg,
+    backgroundColor: Colors.background.card,
   },
   loginButton: {
     backgroundColor: Colors.primary.main,
@@ -382,6 +509,7 @@ const styles = StyleSheet.create({
     color: Colors.primary.dark,
     fontSize: Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
+    backgroundColor: Colors.primary.main,
   },
   footer: {
     backgroundColor: Colors.primary.dark,
@@ -393,36 +521,53 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: Typography.fontSize.sm,
     color: Colors.text.secondary,
+    backgroundColor: Colors.primary.dark,
   },
   statsSection: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.lg,
     backgroundColor: Colors.primary.dark,
   },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.primary.dark,
+  },
+  editHeaderButton: {
+    marginLeft: "auto",
+    padding: Spacing.xs,
+    backgroundColor: Colors.primary.dark,
+  },
   statsTitle: {
     fontSize: Typography.fontSize.xl,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.text.primary,
-    marginBottom: Spacing.md,
+    backgroundColor: Colors.primary.dark,
   },
   statsGrid: {
     flexDirection: "row",
     justifyContent: "space-between",
+    backgroundColor: Colors.primary.dark,
   },
   statItem: {
     alignItems: "center",
     flex: 1,
+    backgroundColor: Colors.primary.dark,
   },
   statNumber: {
     fontSize: Typography.fontSize.xxxl,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.primary.main,
     marginBottom: Spacing.xs,
+    backgroundColor: Colors.primary.dark,
   },
   statLabel: {
     fontSize: Typography.fontSize.md,
     color: Colors.text.secondary,
     textAlign: "center",
+    backgroundColor: Colors.primary.dark,
   },
   objectivesSection: {
     paddingHorizontal: Spacing.lg,
@@ -434,9 +579,11 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeight.bold,
     color: Colors.text.primary,
     marginBottom: Spacing.md,
+    backgroundColor: Colors.primary.dark,
   },
   objectivesList: {
     gap: Spacing.sm,
+    backgroundColor: Colors.primary.dark,
   },
   objectiveItem: {
     backgroundColor: Colors.background.card,
@@ -444,15 +591,27 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+  },
+  objectiveContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    backgroundColor: Colors.background.card,
   },
   objectiveIcon: {
-    fontSize: Typography.fontSize.xl,
     marginRight: Spacing.md,
+    backgroundColor: "transparent",
   },
   objectiveText: {
     fontSize: Typography.fontSize.md,
     color: Colors.text.primary,
     flex: 1,
+    backgroundColor: Colors.background.card,
+  },
+  deleteButton: {
+    padding: Spacing.sm,
+    backgroundColor: Colors.background.card,
   },
   historySection: {
     paddingHorizontal: Spacing.lg,
@@ -464,9 +623,11 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeight.bold,
     color: Colors.text.primary,
     marginBottom: Spacing.md,
+    backgroundColor: Colors.primary.dark,
   },
   historyList: {
     gap: Spacing.sm,
+    backgroundColor: Colors.primary.dark,
   },
   historyItem: {
     backgroundColor: Colors.background.card,
@@ -475,25 +636,30 @@ const styles = StyleSheet.create({
   },
   historyContent: {
     gap: Spacing.xs,
+    backgroundColor: Colors.background.card,
   },
   historyExercise: {
     fontSize: Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
     color: Colors.text.primary,
+    backgroundColor: Colors.background.card,
   },
   historyDetails: {
     fontSize: Typography.fontSize.sm,
     color: Colors.text.secondary,
+    backgroundColor: Colors.background.card,
   },
   historyDate: {
     fontSize: Typography.fontSize.sm,
     color: Colors.text.secondary,
     fontStyle: "italic",
+    backgroundColor: Colors.background.card,
   },
   noHistoryText: {
     fontSize: Typography.fontSize.md,
     color: Colors.text.secondary,
     textAlign: "center",
     fontStyle: "italic",
+    backgroundColor: Colors.primary.dark,
   },
 });
