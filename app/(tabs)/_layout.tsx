@@ -1,13 +1,13 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Tabs } from 'expo-router';
-import React from 'react';
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { Tabs } from "expo-router";
+import React from "react";
 
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
-import { Colors } from '@/constants/Styles';
+import { useClientOnlyValue } from "@/components/useClientOnlyValue";
+import { Colors } from "@/constants/Styles";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
+  name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
 }) {
   return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
@@ -27,11 +27,12 @@ export default function TabLayout() {
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
         headerShown: useClientOnlyValue(false, true),
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Machines',
+          title: "Machines",
           tabBarIcon: ({ color }) => <TabBarIcon name="list" color={color} />,
           headerShown: false,
         }}
@@ -39,15 +40,25 @@ export default function TabLayout() {
       <Tabs.Screen
         name="scan"
         options={{
-          title: 'Scan',
+          title: "Scan",
           tabBarIcon: ({ color }) => <TabBarIcon name="qrcode" color={color} />,
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="historique"
+        options={{
+          title: "Historique",
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="bar-chart" color={color} />
+          ),
           headerShown: false,
         }}
       />
       <Tabs.Screen
         name="two"
         options={{
-          title: 'Profile',
+          title: "Profile",
           tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
           headerShown: false,
         }}

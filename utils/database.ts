@@ -21,8 +21,6 @@ export async function getUserIdFromAuth(
 
   // Si l'utilisateur n'existe pas, le créer
   if (error?.code === "PGRST116" || !data) {
-    console.log("Création d'un nouvel utilisateur dans la base...");
-
     // Récupérer l'email depuis auth
     const { data: authData } = await supabase.auth.getUser();
     const email = authData.user?.email || `user_${authUuid.slice(0, 8)}`;
@@ -46,8 +44,6 @@ export async function getUserIdFromAuth(
       );
       return null;
     }
-
-    console.log("Utilisateur créé avec succès:", newUser.utilisateur_id);
 
     // Créer les objectifs par défaut
     await creerObjectifsParDefaut(newUser.utilisateur_id);

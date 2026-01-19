@@ -1,14 +1,20 @@
 import { BorderRadius, Colors, Spacing, Typography } from "@/constants/Styles";
 import { useExercices } from "@/hooks/useExercices";
 import { useMachine } from "@/hooks/useMachine";
+import { enregistrerPerformance, getUserIdFromAuth } from "@/utils/database";
+import { supabase } from "@/utils/supabase";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -672,9 +678,6 @@ export default function MachineDetailsScreen() {
     error: exercicesError,
   } = useExercices(online?.machine_id ?? null);
 
-  console.log("Fetched machine data:", online);
-  console.log("Fetched exercices:", exercices);
-
   const [selectedTab, setSelectedTab] = useState(machine.tabs[0]);
   const [selectedLevel, setSelectedLevel] = useState<
     "beginner" | "intermediate" | "advanced"
@@ -687,11 +690,87 @@ export default function MachineDetailsScreen() {
     bodyPositioning: false,
   });
 
+  // Performance tracking states
+  const [userId, setUserId] = useState<number | null>(null);
+  const [showPerformanceModal, setShowPerformanceModal] = useState(false);
+  const [series, setSeries] = useState("");
+  const [repetitions, setRepetitions] = useState("");
+  const [charge, setCharge] = useState("");
+  const [saving, setSaving] = useState(false);
+
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
     }));
+  };
+
+  useEffect(() => {
+    // Récupérer l'utilisateur connecté
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (user?.id) {
+        const id = await getUserIdFromAuth(user.id);
+        setUserId(id);
+      }
+    });
+  }, []);
+
+  const handleSavePerformance = async () => {
+    if (!userId) {
+      Alert.alert(
+        "Erreur",
+        "Vous devez être connecté pour enregistrer une performance",
+      );
+      return;
+    }
+
+    if (!exercices || exercices.length === 0) {
+      Alert.alert("Erreur", "Aucun exercice trouvé pour cette machine");
+      return;
+    }
+
+    const seriesNum = parseInt(series);
+    const repsNum = parseInt(repetitions);
+    const chargeNum = charge ? parseFloat(charge) : undefined;
+
+    if (!seriesNum || !repsNum || seriesNum <= 0 || repsNum <= 0) {
+      Alert.alert(
+        "Erreur",
+        "Veuillez entrer des valeurs valides pour les séries et répétitions",
+      );
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await enregistrerPerformance({
+        utilisateurId: userId,
+        exerciceId: exercices[0].exercice_id,
+        series: seriesNum,
+        repetitions: repsNum,
+        charge: chargeNum,
+      });
+
+      Alert.alert(
+        "Performance enregistrée !",
+        `${seriesNum} séries × ${repsNum} répétitions${chargeNum ? ` avec ${chargeNum}kg` : ""} ont été enregistrées.`,
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              setShowPerformanceModal(false);
+              setSeries("");
+              setRepetitions("");
+              setCharge("");
+            },
+          },
+        ],
+      );
+    } catch (error) {
+      Alert.alert("Erreur", "Impossible d'enregistrer la performance");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -881,8 +960,93 @@ export default function MachineDetailsScreen() {
           <Text style={styles.nutritionButtonText}>View Nutrition Plan</Text>
         </TouchableOpacity>
 
+        {/* Save Performance Button */}
+        <TouchableOpacity
+          style={styles.savePerformanceButton}
+          onPress={() => setShowPerformanceModal(true)}
+        >
+          <Text style={styles.savePerformanceButtonText}>
+            ✓ Terminer l'exercice
+          </Text>
+        </TouchableOpacity>
+
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Performance Modal */}
+      <Modal
+        visible={showPerformanceModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowPerformanceModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Enregistrer votre performance</Text>
+            <Text style={styles.modalSubtitle}>
+              {exercices?.[0]?.titre_exercice || online?.nom_machine}
+            </Text>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Nombre de séries *</Text>
+              <TextInput
+                style={styles.input}
+                value={series}
+                onChangeText={setSeries}
+                keyboardType="numeric"
+                placeholder="Ex: 4"
+                placeholderTextColor={Colors.text.secondary}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Répétitions par série *</Text>
+              <TextInput
+                style={styles.input}
+                value={repetitions}
+                onChangeText={setRepetitions}
+                keyboardType="numeric"
+                placeholder="Ex: 12"
+                placeholderTextColor={Colors.text.secondary}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Charge (kg) - Optionnel</Text>
+              <TextInput
+                style={styles.input}
+                value={charge}
+                onChangeText={setCharge}
+                keyboardType="decimal-pad"
+                placeholder="Ex: 50"
+                placeholderTextColor={Colors.text.secondary}
+              />
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setShowPerformanceModal(false)}
+                disabled={saving}
+              >
+                <Text style={styles.modalCancelButtonText}>Annuler</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.modalSaveButton}
+                onPress={handleSavePerformance}
+                disabled={saving}
+              >
+                {saving ? (
+                  <ActivityIndicator color={Colors.primary.dark} />
+                ) : (
+                  <Text style={styles.modalSaveButtonText}>Enregistrer</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1085,6 +1249,91 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   nutritionButtonText: {
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.primary.dark,
+  },
+  savePerformanceButton: {
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.md,
+    backgroundColor: Colors.accent.green || "#4CAF50",
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    alignItems: "center",
+  },
+  savePerformanceButtonText: {
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.primary.dark,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: Spacing.lg,
+  },
+  modalContent: {
+    backgroundColor: Colors.background.card,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xl,
+    width: "100%",
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.primary,
+    textAlign: "center",
+    marginBottom: Spacing.xs,
+  },
+  modalSubtitle: {
+    fontSize: Typography.fontSize.md,
+    color: Colors.primary.main,
+    textAlign: "center",
+    marginBottom: Spacing.lg,
+  },
+  inputGroup: {
+    marginBottom: Spacing.md,
+  },
+  inputLabel: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.primary,
+    marginBottom: Spacing.xs,
+    fontWeight: Typography.fontWeight.medium,
+  },
+  input: {
+    backgroundColor: Colors.background.input,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.md,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: Spacing.md,
+    marginTop: Spacing.lg,
+  },
+  modalCancelButton: {
+    flex: 1,
+    backgroundColor: Colors.background.input,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+  },
+  modalCancelButtonText: {
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.medium,
+    color: Colors.text.primary,
+  },
+  modalSaveButton: {
+    flex: 1,
+    backgroundColor: Colors.primary.main,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+  },
+  modalSaveButtonText: {
     fontSize: Typography.fontSize.md,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.primary.dark,

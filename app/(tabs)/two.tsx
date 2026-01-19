@@ -316,25 +316,6 @@ export default function ProfileScreen() {
 
               <TouchableOpacity
                 style={styles.menuItem}
-                onPress={() => setShowingHistory(!showingHistory)}
-              >
-                <View style={styles.menuItemContent}>
-                  <Ionicons
-                    name="calendar"
-                    size={20}
-                    color={Colors.text.primary}
-                  />
-                  <Text style={styles.menuItemText}>Historique</Text>
-                </View>
-                <Ionicons
-                  name={showingHistory ? "chevron-down" : "chevron-forward"}
-                  size={20}
-                  color={Colors.text.secondary}
-                />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.menuItem}
                 onPress={() => router.push("/notifications" as any)}
               >
                 <View style={styles.menuItemContent}>

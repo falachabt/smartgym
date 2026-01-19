@@ -1,10 +1,10 @@
 import { Text, View } from "@/components/Themed";
 import {
-    BorderRadius,
-    Colors,
-    Shadows,
-    Spacing,
-    Typography,
+  BorderRadius,
+  Colors,
+  Shadows,
+  Spacing,
+  Typography,
 } from "@/constants/Styles";
 
 import { useCategories } from "@/hooks/useCategories";
@@ -12,15 +12,15 @@ import { useMachines } from "@/hooks/useMachine";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    Dimensions,
-    Image,
-    Platform,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
 } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -40,7 +40,7 @@ export default function TabOneScreen() {
     // Filtre par recherche
     if (searchQuery) {
       filtered = filtered.filter((machine) =>
-        machine.nom_machine?.toLowerCase().includes(searchQuery.toLowerCase())
+        machine.nom_machine?.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
@@ -52,7 +52,7 @@ export default function TabOneScreen() {
         return machine.exercices.some(
           (exercice) =>
             exercice.categorie_filtre?.toLowerCase() ===
-            selectedCategory.toLowerCase()
+            selectedCategory.toLowerCase(),
         );
       });
     }
@@ -266,6 +266,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: Spacing.xxl,
+    backgroundColor: Colors.background.card,
   },
   loadingText: {
     color: Colors.text.secondary,
