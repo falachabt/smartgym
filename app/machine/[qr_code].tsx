@@ -28,7 +28,7 @@ const MACHINES_DATA: Record<string, any> = {
     name: "",
     image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800",
 
-    tabs: ["Quadriceps", "Hamstrings", "Glutes"],
+    tabs: [""],
     howToUse:
       "Sit on the machine with your back and head resting comfortably against the padded support. Place your feet on the footplate about hip-width apart, ensuring your heels are flat. Push the platform away using your heels and forefoot.",
     commonErrors: [
