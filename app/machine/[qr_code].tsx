@@ -21,8 +21,7 @@ const MACHINES_DATA: Record<string, any> = {
     id: "leg-press",
     name: "",
     image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800",
-    videoThumbnail:
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
+
     tabs: ["Quadriceps", "Hamstrings", "Glutes"],
     howToUse:
       "Sit on the machine with your back and head resting comfortably against the padded support. Place your feet on the footplate about hip-width apart, ensuring your heels are flat. Push the platform away using your heels and forefoot.",
@@ -245,8 +244,7 @@ const MACHINES_DATA: Record<string, any> = {
     id: "lat-pulldown",
     name: "Lat Pulldown Machine",
     image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800",
-    videoThumbnail:
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
+
     tabs: ["Back", "Lats", "Biceps"],
     howToUse:
       "Sit at the machine and secure your thighs under the pads. Grab the bar with a wide grip, palms facing forward. Pull the bar down to your upper chest while keeping your torso upright. Slowly return to the starting position.",
@@ -266,8 +264,7 @@ const MACHINES_DATA: Record<string, any> = {
       primary: ["Latissimus Dorsi", "Rhomboids"],
       secondary: ["Biceps", "Rear Deltoids", "Trapezius"],
     },
-    muscleImage:
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400",
+
     recommendedWeights: {
       beginner: { weight: 30, reps: "12-15" },
       intermediate: { weight: 50, reps: "10-12" },
@@ -454,8 +451,7 @@ const MACHINES_DATA: Record<string, any> = {
     id: "chest-press",
     name: "Chest Press Machine",
     image: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800",
-    videoThumbnail:
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
+
     tabs: ["Chest", "Pectorals", "Triceps"],
     howToUse:
       "Sit with your back flat against the pad. Grip the handles at chest height. Push the handles forward until your arms are extended, then slowly return to starting position.",
@@ -475,8 +471,7 @@ const MACHINES_DATA: Record<string, any> = {
       primary: ["Pectoralis Major", "Anterior Deltoids"],
       secondary: ["Triceps", "Serratus Anterior"],
     },
-    muscleImage:
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400",
+
     recommendedWeights: {
       beginner: { weight: 25, reps: "12-15" },
       intermediate: { weight: 45, reps: "10-12" },
@@ -758,7 +753,7 @@ export default function MachineDetailsScreen() {
               uri:
                 exercices?.[0]?.video_url ||
                 exercices?.[0]?.image_produit_url ||
-                "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
+                "",
             }}
             style={styles.videoThumbnail}
           />
